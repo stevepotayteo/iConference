@@ -13,6 +13,14 @@
     "express": "^3.5.0",
     "redis": "^0.10.1",
     "hiredis": "^0.1.16",
-    "sockjs": "^0.3.8"
+    "sockjs": "^0.3.8",
+    "stylus": "^0.42.3"
+  },
+  "devDependencies": {
+    "gulp-plumber": "^0.5.6",
+    "gulp-nodemon": "^1.0.2",
+    "gulp": "^3.5.6",
+    "gulp-livereload": "^1.2.0",
+    "gulp-wait": "0.0.2"
   }
 }
