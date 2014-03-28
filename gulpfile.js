@@ -4,6 +4,7 @@ var gulp = require('gulp')
   , plumber = require('gulp-plumber')
   , nodemon = require('gulp-nodemon')
   , wait = require('gulp-wait')
+  , exec = require('child_process').exec
   , livereload = require('gulp-livereload');
 
 var paths = {
@@ -22,6 +23,24 @@ gulp.task('scripts', function() {
 
 gulp.task('watch', function() {
   gulp.watch(paths.scripts, ['scripts']);
+});
+
+gulp.task('start-redis', function() {
+  exec('nohup redis-server redis.conf >/dev/null 2>&1&', {}, function (error, stdout, stderr) {
+    if (error) {
+      console.log('-------ERROR-------');
+      console.log(error);
+    }
+  });
+});
+
+gulp.task('stop-redis', function() {
+  exec('redis-cli SHUTDOWN', {}, function (error, stdout, stderr) {
+    if (error) {
+      console.log('-------ERROR-------');
+      console.log(error);
+    }
+  });
 });
 
 gulp.task('default', ['server', 'scripts', 'watch']);
