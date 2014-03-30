@@ -5,7 +5,8 @@ var gulp = require('gulp')
   , nodemon = require('gulp-nodemon')
   , wait = require('gulp-wait')
   , exec = require('child_process').exec
-  , livereload = require('gulp-livereload');
+  , livereload = require('gulp-livereload')
+  , fs = require('fs');
 
 var paths = {
   scripts: ['*.js'],
@@ -26,12 +27,19 @@ gulp.task('watch', function() {
 });
 
 gulp.task('start-redis', function() {
-  exec('nohup redis-server redis.conf >/dev/null 2>&1&', {}, function (error, stdout, stderr) {
-    if (error) {
-      console.log('-------ERROR-------');
-      console.log(error);
+  if(fs.open('logs', 'r', function(err, fd) {
+    if(err) {
+      console.log('Logs directory does not exist. Creating one now.');
+      fs.mkdirSync('logs');
     }
-  });
+
+    exec('nohup redis-server redis.conf >/dev/null 2>&1&', {}, function (error, stdout, stderr) {
+      if (error) {
+        console.log('-------ERROR-------');
+        console.log(error);
+      }
+    });
+  }));
 });
 
 gulp.task('stop-redis', function() {
