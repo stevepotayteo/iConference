@@ -19,6 +19,13 @@ module.exports = function(app) {
   var httpServer = http.createServer(app);
   var httpsServer = https.createServer(credentials, app);
 
+  httpServer.listen(app.get('http port'));
+  httpsServer.listen(app.get('https port'));
+
+  app.set('http server', httpServer);
+  app.set('https server', httpsServer);
+
+  // Custom middleware to redirect all http requests to https
   var https_redirect = function(req, res, next) {
     if (!req.secure) {
         var host = (req.headers.host).replace(/:\d+$/, ":" + app.get('https port'));
@@ -31,12 +38,6 @@ module.exports = function(app) {
   };
 
   app.use(https_redirect);
-
-  httpServer.listen(app.get('http port'));
-  httpsServer.listen(app.get('https port'));
-
-  app.set('http server', httpServer);
-  app.set('https server', httpsServer);
 
   // set up template engine
   app.set('views', path.join(__dirname, '..', 'views'));
@@ -66,8 +67,8 @@ module.exports = function(app) {
   app.use(expressWinston.errorLogger({
     transports: [
       new winston.transports.Console({
-        json: true,
-        colorize: true
+        json: true
+        , colorize: true
       })
       , new winston.transports.File({
         json: true
