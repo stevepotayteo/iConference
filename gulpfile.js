@@ -7,7 +7,12 @@ var gulp = require('gulp')
   , open = require('gulp-open')
   , exec = require('child_process').exec
   , livereload = require('gulp-livereload')
-  , fs = require('fs');
+  , fs = require('fs')
+  , nconf = require('nconf')
+  , path = require('path')
+  ;
+
+nconf.argv().env().file({ file: path.join(__dirname, 'config/config.json') });
 
 var paths = {
   scripts: ['*.js'],
@@ -55,7 +60,7 @@ gulp.task('stop-redis', function() {
 
 gulp.task("app", function(){
   var options = {
-    url: "http://localhost:8000",
+    url: "http://localhost:" + nconf.get('app:ports:http'),
     app: "google chrome"
   };
   gulp.src("./app.js")

@@ -5,16 +5,25 @@ var winston = require('winston')
   , fs = require('fs')
   , http = require('http')
   , https = require('https')
+  , redis = require('redis')
+  , session = require('express-session')
+  , RedisStore = require('connect-redis')(session)
+  , url = require('url')
+  , nconf = require('nconf')
   ;
 
 module.exports = function(app) {
+  nconf.argv().env().file({ file: path.join(__dirname, 'config.json') });
+
+  app.set('config', nconf);
+
   // set up http and https servers
   var privateKey  = fs.readFileSync(path.join(__dirname, '..', 'sslcert/server.key'), 'utf8');
   var certificate = fs.readFileSync(path.join(__dirname, '..', 'sslcert/server.crt'), 'utf8');
   var credentials = { key: privateKey, cert: certificate };
 
-  app.set('http port', process.env.HTTP_PORT || 8000);
-  app.set('https port', process.env.HTTPS_PORT || 8443);
+  app.set('http port', process.env.HTTP_PORT || nconf.get('app:ports:http'));
+  app.set('https port', process.env.HTTPS_PORT || nconf.get('app:ports:https'));
 
   var httpServer = http.createServer(app);
   var httpsServer = https.createServer(credentials, app);
@@ -48,6 +57,25 @@ module.exports = function(app) {
 
   // log('Setting static files lookup root path.');
   app.use(express.static(path.join(__dirname, '..', '/public')));
+
+  // log('Opening a redis client connection');
+  var redisConfig = url.parse(nconf.get('redis:url'));
+  var redisClient = redis.createClient(redisConfig.port, redisConfig.hostname);
+
+  redisClient
+  .on('error', function(err) {
+    console.log('Error connecting to redis %j', err);
+  }).on('connect', function() {
+    console.log('Connected to redis.');
+  }).on('ready', function() {
+    console.log('Redis client ready.');
+  });
+
+  // log('Saving redisClient connection in app');
+  app.set('redisClient', redisClient);
+
+  // log('Creating and saving a session store instance with redis client.');
+  app.set('sessionStore', new RedisStore({client: redisClient}));
 
   // set up loggers
   app.use(expressWinston.logger({

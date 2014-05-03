@@ -1,0 +1,11 @@
+{
+  "app": {
+    "ports": {
+      "http": 8000,
+      "https": 8443
+    }
+  },
+  "redis": {
+    "url": "http://localhost:6379"
+  }
+}
